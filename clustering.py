@@ -1,23 +1,17 @@
-from geocluster import GeoCluster
+from haversine import haversine
 
-from utils import parseRange
+from tomcluster import tomcluster
 
-def groupData(data, lat_r, lng_r):
-    lat_low, lat_high = parseRange(lat_r)
-    lng_low, lng_high = parseRange(lng_r)
+def groupData(data, viewport):
+    north = viewport['northEast']['lat']
+    south = viewport['southWest']['lat']
+    west = viewport['southWest']['lng']
+    east = viewport['northEast']['lng']
 
-    # TODO: check lat / lng are not the wrong way around
-    north, west, south, east = lat_low, lng_low, lat_high, lng_high
+    diagonal_distance = haversine((viewport['northEast']['lat'], viewport['northEast']['lng']),
+                                  (viewport['southWest']['lat'], viewport['southWest']['lng'])
+                                  )
 
-    cluster = GeoCluster()
-    cluster.set_bounds(north, west, south, east)
-    cluster.set_grid(15, 15)
-    cluster.use_clustering(False)
-    cluster.populate(data)
-
-    # Flatten json structure
-    clusters = [ c for row in cluster.to_json() for c in row ]
-    # Remove empty clusters
-    clusters = [ c for c in clusters if len(c['points'])>0 ]
+    clusters = tomcluster(data, diagonal_distance / 10)
 
     return clusters

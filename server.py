@@ -1,8 +1,11 @@
 from __future__ import division
 
+import time
+import json
 from flask import Flask, send_from_directory, jsonify, request
 import numpy as np
 import pandas as pd
+from flask_cors import cross_origin
 
 from filters import filterData
 from clustering import groupData
@@ -12,22 +15,15 @@ app = Flask(__name__, static_url_path='/')
 # Load data for demo -- this will need to go at some point...
 risse_data = pd.read_csv('glammap-risse-dump.csv', delimiter='\t')
 
-def prepareDataForClustering(data_pd):
-    # This will need to change depending on the columns on the .csv file
-    data_tmp = data_pd[['title', 'year', 'latitude', 'longitude']]
-    data_tmp = data_tmp.rename(columns={'latitude': 'latti', 'longitude': 'longi'})
-    data_c = data_tmp.T.to_dict().values()
-    return data_c
-
 def buildGlyphFromPoints(points_json):
     # This will need to change depending on the columns on the .csv file
     pdf = pd.DataFrame(points_json)
     bins = np.arange(1700,1940 + 50, 50)
     counts, years = np.histogram(pdf['year'], bins=bins)
-    yearCounts = { y: c for y, c in  zip(years, counts) if c > 0}
+    yearCounts = { str(y): int(c) for y, c in zip(years, counts) if c > 0}
     return {
-        'lat': pdf['lat'].mean(),
-        'lng': pdf['lng'].mean(),
+        'lat': pdf['latitude'].mean(),
+        'lng': pdf['longitude'].mean(),
         'count': len(pdf),
         'years': yearCounts
     }
@@ -35,25 +31,49 @@ def buildGlyphFromPoints(points_json):
 def aggregateClusters(clusters):
     summary = []
     for cluster in clusters:
-        glyphData = buildGlyphFromPoints(cluster['points'])
+        glyphData = buildGlyphFromPoints(cluster)
         summary.append(glyphData)
     return summary
 
-@app.route('/jsonData/latitude/<lat_r>/longitude/<lng_r>/')
-def buildData(lat_r, lng_r):
-    filters = { 'latitude': lat_r, 'longitude': lng_r }
-    filters.update(request.args.to_dict())
+
+@app.route('/test', methods=['POST'])
+def option():
+    return jsonify(request.get_json())
+    # return jsonify(['ok'])
+
+@app.route('/jsonData', methods=['POST'])
+@cross_origin()
+def buildData():
+    params = request.get_json()
+
+    filters = {
+        'latitude': [params['viewport']['southWest']['lat'], params['viewport']['northEast']['lat']],
+        'longitude': [params['viewport']['southWest']['lng'], params['viewport']['northEast']['lng']]
+    }
+    filters.update({'years': [params['range']['start'], params['range']['end']]})
+
     data_filtered = filterData(filters, risse_data)
-
-    data_prepared = prepareDataForClustering(data_filtered)
-
-    clusters = groupData(data_prepared, lat_r, lng_r)
+    clusters = groupData(data_filtered, params['viewport'])
     data = aggregateClusters(clusters)
     return jsonify(data)
 
-@app.route('/<path:path>')
-def send_files(path):
-    return send_from_directory('', path)
-
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=True)
+
+
+# {
+#   "viewport": {
+#     "northEast": {
+#       "lat": 51.951036645095904,
+#       "lng": 10.228271484375002
+#     },
+#     "southWest": {
+#       "lat": 46.98774725646568,
+#       "lng": 0.9228515625000001
+#     }
+#   },
+#   "range": {
+#     "start": 1592,
+#     "end": 1881
+#   }
+# }

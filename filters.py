@@ -6,7 +6,8 @@ def matchColumnValue(data, column, value):
     return data[data[column].apply(columnFilter)]
 
 def filterColumnRange(data, column, range_s):
-    low, high = parseRange(range_s)
+    low = min(range_s)
+    high = max(range_s)
     data = data[(data[column] >= low)]
     data = data[(data[column] <= high)]
     return data
@@ -20,8 +21,8 @@ filterBank = {
 }
 
 def filterData(filters, data):
-    for key,value in filters.iteritems():
-        print 'Applying filter: ', key
+    for key,value in filters.items():
+        print('Applying filter: ', key)
         if key in filterBank:
             data = filterBank[key](data, value)
     return data
