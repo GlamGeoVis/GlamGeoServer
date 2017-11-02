@@ -10,7 +10,8 @@ from flask_cors import cross_origin
 from filters import filterData
 from clustering import groupData
 
-app = Flask(__name__, static_url_path='/')
+
+app = application = Flask(__name__, static_url_path='/')
 
 # Load data for demo -- this will need to go at some point...
 risse_data = pd.read_csv('glammap-risse-dump.csv', delimiter='\t')
@@ -18,7 +19,7 @@ risse_data = pd.read_csv('glammap-risse-dump.csv', delimiter='\t')
 def buildGlyphFromPoints(points_json):
     # This will need to change depending on the columns on the .csv file
     pdf = pd.DataFrame(points_json)
-    bins = np.arange(1700,1940 + 50, 50)
+    bins = np.arange(1700, 1940 + 50, 50)
     counts, years = np.histogram(pdf['year'], bins=bins)
     yearCounts = { str(y): int(c) for y, c in zip(years, counts) if c > 0}
     return {

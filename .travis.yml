@@ -1,0 +1,29 @@
+language: python
+python:
+- 3.6
+services:
+- docker
+cache: pip
+#install:
+#- pip install pytest
+#- pip install pytest-cov
+#- pip install -r requirements.txt
+#- pip install coveralls
+#script:
+#- PYTHONPATH=`pwd` pytest --cov=src
+after_success:
+#- coveralls
+- if [ "$TRAVIS_BRANCH" = "master" ]; then
+    docker login -u=${DOCKER_USERNAME} -p=${DOCKER_PASSWORD} &&
+    docker pull ${DOCKER_USERNAME}/glam &&
+    docker build -t ${DOCKER_USERNAME}/glam --cache-from ${DOCKER_USERNAME}/glam . &&
+    docker push ${DOCKER_USERNAME}/glam;
+  fi
+env:
+  global:
+  - COMMIT=${TRAVIS_COMMIT::8}
+  - secure: XyZ82LihxiOxHSMQwgUqczQvfrvUoilKM66Zq0KqRKgi9p6zlsjQgr5d88gAkItBzi1jHOShm9Ki7sj1TLqByWmYTV90UUBiyGtHQESvLG5KpDNMbIiHBhmS12cjAEKiXNJj/6AvZujOXnedZG69yuMyDBNcb4BOPaYMLUk3Fyt5nO9e+pl2Gb69wusMa665ArV22tanG3OZv7YcJLpQFdXz6RPt2zZcrExhFREVL0FyZQHZ1PkulFtKlSvBe+vlDLPsaXegZRasYmTBjNX4pvDyfPPxTODbqZ/cEgEtoaICFUOSovUJXVvB715XCKeTQqU5Aj3jzb8mnjLqbYUUfuPh5XS4kr8Fj9bnqLV9ee0nRK3LEUxPyr25XWT20dh8HfjzLOjtzhn/o5gL4AQD7y8Qrpd313D//WuSdPGhlvNfWgJBOjcqqbS2dphe7hdlSfNJkStB5zy/pBuZf/JBVT3y1FB+CakXTEtjgEDNJ5ZfZgSt1MG63WB13dAFZWfraUG1uzdzOIdtvn0mAbNWc10OlnnQn0PjN3JEoMfg0qT86LRBs1yR6leXHEevznf6qGH3iqPM035Siu+hSc/cZn4AOjT/i/7fciXYyfpLBv8mD9NnYhzu58GTNV3wsaI7ZiYpyae90+huo7pfBwaYg97UvqwB9qKPlVPZ7FEQPiM=
+  - secure: BCPuudrgoAnLAO1DUQnm5Z1N/d9tVrao4Ma5LDLQh6W9C9D/cmSnK+BYiF2e2xpTV2u5+cGNuwSWTUBUKpaLvCFdhf8Q7o9PpeCoqN+OvZWlfvLzMNlqbamzqEujacjX/mX3geuwOR0Z2G45OKDphiV4cN0n97Hz50R6xEPDuQo/usvDtUAQhffsvPNYZB6goGEYOuwYXilOKS+TaGi9IMN2AZotf84Ie1rV3iBXzOOpeJYOICLpAM1n3pkiY2p9O9Ksjjex433ZmmsE6RJ53JLcmHGWd95BA+CvfWTX0fFTTI1vMhWO5PBjcGpePVdNXAz/diUfIbXtkEAX7UztyfmHsDbDALSe2yrC03jUCWmytojeqbMwuLSJWb5z3HBHSJLhxVUJsHHBYj6y9pm08NxYRlqExfAmuHXiLIN+9Q0q1BAWPKkMz0i59R8AvM+teshHuClE665Sx3XMaWlFnTpHLtuDOkWBBb8u6IgLAYV3NX/JFoUygs503G1kFIJAbMmo1x2yaeySQ/FJGzqoheQp6slB90xEHy/8HqpycS15ZuQ61i62iSJF/an9blAweh/F+kkZ8Y4jtPbeRjDKyaMc8SuTnWIHeleBfARevOvg9cPKf0FDWrhGJ6noPxgFWAWOIp2coNoZIH5vZFkvYXDATjr17Zlgluh6dULcL4U=
+notifications:
+  email:
+  - t.klaver@esciencecenter.nl
