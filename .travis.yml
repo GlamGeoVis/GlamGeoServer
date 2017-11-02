@@ -4,13 +4,13 @@ python:
 services:
 - docker
 cache: pip
-#install:
-#- pip install pytest
-#- pip install pytest-cov
-#- pip install -r requirements.txt
+install:
+- pip install pytest
+- pip install pytest-cov
+- pip install -r requirements.txt
 #- pip install coveralls
-#script:
-#- PYTHONPATH=`pwd` pytest --cov=src
+script:
+- PYTHONPATH=`pwd` pytest --cov=.
 after_success:
 #- coveralls
 - if [ "$TRAVIS_BRANCH" = "master" ]; then
