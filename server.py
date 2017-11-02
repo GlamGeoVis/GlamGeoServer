@@ -36,6 +36,8 @@ def aggregateClusters(clusters):
         summary.append(glyphData)
     return summary
 
+def aggregateYears(data):
+    return {str(index): int(value) for index, value in data['year'].value_counts().iteritems()}
 
 @app.route('/test', methods=['POST'])
 def option():
@@ -54,9 +56,14 @@ def buildData():
     filters.update({'years': [params['range']['start'], params['range']['end']]})
 
     data_filtered = filterData(filters, risse_data)
+    yearsData = aggregateYears(data_filtered)
+
     clusters = groupData(data_filtered, params['viewport'])
-    data = aggregateClusters(clusters)
-    return jsonify(data)
+    clusterData = aggregateClusters(clusters)
+    return jsonify({
+        'clusters': clusterData,
+        'years': yearsData
+    })
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=True)
