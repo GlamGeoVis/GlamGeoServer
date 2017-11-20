@@ -22,6 +22,5 @@ def tomcluster(data, delta=10):
         for point in close_points:
             dataset.remove(point)
         current_cluster += close_points
-        print(len(current_cluster))
 
     return clusters

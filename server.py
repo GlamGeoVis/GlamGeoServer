@@ -55,15 +55,21 @@ def buildData():
     }
     filters.update({'years': [params['range']['start'], params['range']['end']]})
 
+    if 'title' in params:
+        filters['title'] = params['title']
+
     data_filtered = filterData(filters, risse_data)
     yearsData = aggregateYears(data_filtered)
 
     clusters = groupData(data_filtered, params['viewport'])
     clusterData = aggregateClusters(clusters)
+
     return jsonify({
+        'total': len(data_filtered),
         'clusters': clusterData,
         'years': yearsData
     })
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=True)
