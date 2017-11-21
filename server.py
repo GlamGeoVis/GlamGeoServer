@@ -44,11 +44,8 @@ def option():
     return jsonify(request.get_json())
     # return jsonify(['ok'])
 
-@app.route('/jsonData', methods=['POST'])
-@cross_origin()
-def buildData():
-    params = request.get_json()
 
+def query(params):
     filters = {
         'latitude': [params['viewport']['southWest']['lat'], params['viewport']['northEast']['lat']],
         'longitude': [params['viewport']['southWest']['lng'], params['viewport']['northEast']['lng']]
@@ -59,9 +56,17 @@ def buildData():
         filters['title'] = params['title']
 
     data_filtered = filterData(filters, risse_data)
-    yearsData = aggregateYears(data_filtered)
-
     clusters = groupData(data_filtered, params['viewport'])
+
+    return data_filtered, clusters
+
+
+@app.route('/jsonData', methods=['POST'])
+@cross_origin()
+def buildData():
+    data_filtered, clusters = query(request.get_json())
+
+    yearsData = aggregateYears(data_filtered)
     clusterData = aggregateClusters(clusters)
 
     return jsonify({
@@ -69,6 +74,13 @@ def buildData():
         'clusters': clusterData,
         'years': yearsData
     })
+
+@app.route('/clusterDetails', methods=['POST'])
+@cross_origin()
+def clusterDetails():
+    params = request.get_json()
+    data_filtered, clusters = query(params)
+    return jsonify(clusters[params['id']])
 
 
 if __name__ == "__main__":
