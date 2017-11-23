@@ -17,7 +17,8 @@ filterBank = {
     'latitude' : lambda data, rangeV: filterColumnRange(data, 'latitude', rangeV),
     'longitude': lambda data, rangeV: filterColumnRange(data, 'longitude', rangeV),
     'years'    : lambda data, rangeV: filterColumnRange(data, 'year', rangeV),
-    'title'    : lambda data, value: matchColumnValue(data, 'title', value)
+    'title'    : lambda data, value: matchColumnValue(data, 'title', value),
+    'author'   : lambda data, value: matchColumnValue(data, 'author', value)
 }
 
 def filterData(filters, data):

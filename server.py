@@ -14,7 +14,7 @@ from clustering import groupData
 app = application = Flask(__name__, static_url_path='/')
 
 # Load data for demo -- this will need to go at some point...
-risse_data = pd.read_csv('glammap-risse-dump.csv', delimiter='\t')
+risse_data = pd.read_csv('glammap-risse-dump-authors.csv', delimiter='\t')
 
 def buildGlyphFromPoints(points_json):
     # This will need to change depending on the columns on the .csv file
@@ -54,6 +54,9 @@ def query(params):
 
     if 'title' in params:
         filters['title'] = params['title']
+
+    if 'author' in params:
+        filters['author'] = params['author']
 
     data_filtered = filterData(filters, risse_data)
     clusters = groupData(data_filtered, params['viewport'])
