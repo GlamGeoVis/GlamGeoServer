@@ -150,8 +150,10 @@ import random
 def random_author():
     return authors[len(authors) - round(len(authors) * math.exp(-random.random()))]
 
-with open('../glammap-risse-dump.csv', encoding='utf8') as f:
-    with open('../glammap-risse-dump-authors.csv', 'w') as f_out:
+with open('../trove-dump-uniq-cleaned.tsv', encoding='utf8') as f:
+# with open('../glammap-risse-dump.csv', encoding='utf8') as f:
+#     with open('../glammap-risse-dump-authors.csv', 'w') as f_out:
+    with open('../trove-dump-uniq-cleaned.tsv-authors.csv', 'w') as f_out:
         first_line = f.readline()
         f_out.write(first_line.strip('\n') + '\tauthor\n')
         for line in f:

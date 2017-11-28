@@ -8,33 +8,44 @@ import pandas as pd
 from flask_cors import cross_origin
 
 from filters import filterData
-from clustering import groupData
+from clustering import clusterDBSCAN, clusterTom
 
+from pyproj import Proj
+
+projection = Proj(init='EPSG:3857')  # https://gis.stackexchange.com/questions/44928/what-is-the-default-projection-in-leaflet
 
 app = application = Flask(__name__, static_url_path='/')
 
 # Load data for demo -- this will need to go at some point...
-risse_data = pd.read_csv('glammap-risse-dump-authors.csv', delimiter='\t')
+data_file = 'trove-dump-uniq-cleaned.tsv-authors.csv'
+# data_file = 'glammap-risse-dump-authors.csv'
+print('reading %s' % data_file)
+risse_data = pd.read_csv(data_file, delimiter='\t')
+print('data loaded, calculating euclidean coordinates')
+xy = map(lambda x: projection(x[0], x[1]), zip(risse_data['latitude'], risse_data['longitude']))
+x, y = zip(*xy)
+risse_data['x'] = x
+risse_data['y'] = y
 
-def buildGlyphFromPoints(points_json):
+def buildGlyphFromPoints(cluster):
     # This will need to change depending on the columns on the .csv file
-    pdf = pd.DataFrame(points_json)
     bins = np.arange(1700, 1940 + 50, 50)
-    counts, years = np.histogram(pdf['year'], bins=bins)
+    counts, years = np.histogram(cluster['year'], bins=bins)
     yearCounts = { str(y): int(c) for y, c in zip(years, counts) if c > 0}
     return {
-        'lat': pdf['latitude'].mean(),
-        'lng': pdf['longitude'].mean(),
-        'count': len(pdf),
+        'lat': cluster['latitude'].mean(),
+        'lng': cluster['longitude'].mean(),
+        'count': len(cluster),
         'years': yearCounts
     }
 
-def aggregateClusters(clusters):
-    summary = []
-    for cluster in clusters:
-        glyphData = buildGlyphFromPoints(cluster)
-        summary.append(glyphData)
-    return summary
+def aggregateClusters(data):
+    result = []
+    for cluster in data.groupby('cluster'):
+        glyphData = buildGlyphFromPoints(cluster[1])
+        result.append(glyphData)
+
+    return result
 
 def aggregateYears(data):
     return {str(index): int(value) for index, value in data['year'].value_counts().iteritems()}
@@ -59,18 +70,18 @@ def query(params):
         filters['author'] = params['author']
 
     data_filtered = filterData(filters, risse_data)
-    clusters = groupData(data_filtered, params['viewport'])
+    clusterTom(data_filtered, params['viewport'])
 
-    return data_filtered, clusters
+    return data_filtered
 
 
 @app.route('/jsonData', methods=['POST'])
 @cross_origin()
 def buildData():
-    data_filtered, clusters = query(request.get_json())
+    data_filtered = query(request.get_json())
 
     yearsData = aggregateYears(data_filtered)
-    clusterData = aggregateClusters(clusters)
+    clusterData = aggregateClusters(data_filtered)
 
     return jsonify({
         'total': len(data_filtered),
@@ -82,12 +93,15 @@ def buildData():
 @cross_origin()
 def clusterDetails():
     params = request.get_json()
-    data_filtered, clusters = query(params)
-    return jsonify(clusters[params['id']])
+    data = query(params)
+    print(data)
+
+    # return jsonify(clusters[params['id']])
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True, use_reloader = True)
+    # app.run(host='0.0.0.0', port=8000, debug=False, use_reloader = False)
 
 
 # {
