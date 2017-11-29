@@ -1,6 +1,8 @@
-from haversine import haversine
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
+
+from utils import viewportToWebMercator
+
 
 def clusterDBSCAN(data, viewport):
     print('starting clusterer')
@@ -19,41 +21,29 @@ def clusterDBSCAN(data, viewport):
     print('clustering done')
 
 
-
-
-def distance(loc1, loc2):
-    return haversine((loc1['latitude'], loc1['longitude']),
-                     (loc2['latitude'], loc2['longitude'])
-                     )
-
-def get_close_points(point, data, delta):
-    distances = data[['latitude', 'longitude']].apply(lambda x: haversine(x, (point['latitude'], point['longitude'])), axis=1)
-    return data[distances < delta]
-
-
-def clusterTom(data, viewport):
+def clusterInRadius(data, viewport):
+    #  picks the first unclustered point from data, and groups everything within a radius
+    #  of cluster_parameter * viewport.width in a cluster.
     print('starting clusterer')
-    print(type(data))
-    diagonal_distance = haversine((viewport['northEast']['lat'], viewport['northEast']['lng']),
-                                  (viewport['southWest']['lat'], viewport['southWest']['lng'])
-                                  )
+    data['cluster'] = None
+    cluster_parameter = .1
+    (x0, y0), (x1, y1) = viewportToWebMercator(viewport)
 
-    delta = diagonal_distance / 10
+    if x0 > 1e10 or x1 > 1e10 or y0 > 1e10 or y1 > 1e10:
+        raise Exception('error in viewport coordinates')
 
-    # clusters = []
-    data.loc[0, 'cluster'] = 0
-    while True:
-        currentPoint = data.loc[0]
-        close_points = get_close_points(currentPoint, data[data['cluster'].isnull()], delta)
-        print('a')
-        #
-        # current = dataset[0]
-        # current_cluster.append(current)
-        # dataset.remove(current)
-        # clusters.append(current_cluster)
-        # close_points = get_close_points(current, dataset, delta)
-        # for id, point in enumerate(close_points):
-        #     print(point)
-        #     dataset.remove(point)
-        # current_cluster += close_points
+    for i in range(0, len(data)):
+        data_unclustered = data.loc[data['cluster'].isnull()]
+        if len(data_unclustered) == 0:
+            break
+        currentPoint = data_unclustered.iloc[0]
+        data.loc[
+            data['cluster'].isnull() &
+            ((
+                (data['x']-currentPoint['x'])**2 +
+                (data['y']-currentPoint['y'])**2
+            ) < (cluster_parameter*(x1-x0))**2)
+            , 'cluster'] = i
+
+    print('custering done')
 

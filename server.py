@@ -1,14 +1,12 @@
 from __future__ import division
 
-import time
-import json
-from flask import Flask, send_from_directory, jsonify, request
+from flask import Flask, jsonify, request
 import numpy as np
 import pandas as pd
 from flask_cors import cross_origin
 
 from filters import filterData
-from clustering import clusterDBSCAN, clusterTom
+from clustering import clusterDBSCAN, clusterInRadius
 
 from pyproj import Proj
 
@@ -22,16 +20,16 @@ data_file = 'trove-dump-uniq-cleaned.tsv-authors.csv'
 print('reading %s' % data_file)
 risse_data = pd.read_csv(data_file, delimiter='\t')
 print('data loaded, calculating euclidean coordinates')
-xy = map(lambda x: projection(x[0], x[1]), zip(risse_data['latitude'], risse_data['longitude']))
+xy = map(lambda x: projection(x[0], x[1]), zip(risse_data['longitude'], risse_data['latitude']))
 x, y = zip(*xy)
 risse_data['x'] = x
 risse_data['y'] = y
 
 def buildGlyphFromPoints(cluster):
     # This will need to change depending on the columns on the .csv file
-    bins = np.arange(1700, 1940 + 50, 50)
+    bins = np.arange(1700, 2010 + 50, 50)
     counts, years = np.histogram(cluster['year'], bins=bins)
-    yearCounts = { str(y): int(c) for y, c in zip(years, counts) if c > 0}
+    yearCounts = { str(y): int(c) for y, c in zip(years, counts) }
     return {
         'lat': cluster['latitude'].mean(),
         'lng': cluster['longitude'].mean(),
@@ -70,7 +68,7 @@ def query(params):
         filters['author'] = params['author']
 
     data_filtered = filterData(filters, risse_data)
-    clusterTom(data_filtered, params['viewport'])
+    clusterInRadius(data_filtered, params['viewport'])
 
     return data_filtered
 
@@ -94,9 +92,9 @@ def buildData():
 def clusterDetails():
     params = request.get_json()
     data = query(params)
-    print(data)
-
-    # return jsonify(clusters[params['id']])
+    clusters = list(data.groupby('cluster'))
+    cluster = clusters[params['id']][1]
+    return cluster.to_json(orient="records")
 
 
 if __name__ == "__main__":
