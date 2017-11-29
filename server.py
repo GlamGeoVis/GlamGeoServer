@@ -7,16 +7,19 @@ from flask_cors import cross_origin
 
 from filters import filterData
 from clustering import clusterDBSCAN, clusterInRadius
+import os
 
 from pyproj import Proj
 
 projection = Proj(init='EPSG:3857')  # https://gis.stackexchange.com/questions/44928/what-is-the-default-projection-in-leaflet
 
 app = application = Flask(__name__, static_url_path='/')
-
 # Load data for demo -- this will need to go at some point...
-# data_file = 'trove-dump-uniq-cleaned.tsv-authors.csv'
-data_file = 'glammap-risse-dump-authors.csv'
+if 'GLAM_DATA_FILE' in os.environ:
+    data_file = os.environ['GLAM_DATA_FILE']
+else:
+    data_file = 'glammap-risse-dump-authors.csv'
+
 print('reading %s' % data_file)
 risse_data = pd.read_csv(data_file, delimiter='\t')
 print('data loaded, calculating euclidean coordinates')
