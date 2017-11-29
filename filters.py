@@ -2,7 +2,7 @@ from utils import parseRange
 
 def matchColumnValue(data, column, value):
     value = str(value).lower()
-    columnFilter = lambda item: item.lower().startswith(value)
+    columnFilter = lambda item: value in item
     return data[data[column].apply(columnFilter)]
 
 def filterColumnRange(data, column, range_s):
