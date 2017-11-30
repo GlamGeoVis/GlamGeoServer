@@ -1,5 +1,3 @@
-from utils import parseRange
-
 def matchColumnValue(data, column, value):
     value = str(value).lower()
     columnFilter = lambda item: value in item

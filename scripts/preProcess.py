@@ -1,6 +1,6 @@
 import sys
 
-from utils import cleanData
+from GlamGeoServer.utils import cleanData
 
 troveData_file = '../trove-dump-uniq.tsv'
 
