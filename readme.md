@@ -12,7 +12,7 @@ You can run either using Docker, or using a local python environment.
 ## Docker
 * Make sure `STATIC_FILES_URL` in `Dockerfile` is set to the frontend files' location (your local deployment of `GlamGeoVis/GlamGeoMap` or Amazon S3).
 * Build the image `docker build . -t glam_server`.
-* Run and bind to a local port eg. `docker run -it -name glam_server -p 127.0.0.1:8888:8000 glam_server`.
+* Run and bind to a local port eg. `docker run -it --name glam_server -p 127.0.0.1:8888:8000 glam_server`.
 * Server is now running at [http://localhost:8888](http://localhost:8888).
 
 ## Local python
