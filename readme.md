@@ -5,8 +5,6 @@ This is the Python backend for GLAM. You can find the frontend at [GlamGeoVis/Gl
 * This repository contains a Dockerfile that can be used to create a Docker image. The provided nginx configuration file in `config/nginx.conf.template` provides three endpoints, running on port 8000:
   * Trove backend endpoint `/trove`
   * Risse backend endpoint `/risse`
-  
- The Trove and Risse backends are served through `uwsgi`.
   * All other requests will be forwarded to `STATIC_FILES_URL`, this is where the files for the frontend can be found (eg. `/index.html` will forward to `{STATIC_FILES_URL}/index.html`. This setting can be found in `Dockerfile`, and is by default configured to an Amazon S3 bucket where the current build of the `GlamGeoVis/GlamGeoMap` master branch is automatically deployed.
 
 # How to run
