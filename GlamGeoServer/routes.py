@@ -2,7 +2,7 @@ from flask import jsonify, request, Blueprint
 import numpy as np
 from flask_cors import cross_origin
 from GlamGeoServer.filters import filterData
-from GlamGeoServer.clustering import clusterInRadius
+from GlamGeoServer.clustering import clusterInRadius, clusterJava
 from GlamGeoServer.data import getData
 
 
@@ -34,8 +34,8 @@ def aggregateYears(dataFrame):
 
 def query(params):
     filters = {
-        'latitude': [params['viewport']['southWest']['lat'], params['viewport']['northEast']['lat']],
-        'longitude': [params['viewport']['southWest']['lng'], params['viewport']['northEast']['lng']]
+        # 'latitude': [params['viewport']['southWest']['lat'], params['viewport']['northEast']['lat']],
+        # 'longitude': [params['viewport']['southWest']['lng'], params['viewport']['northEast']['lng']]
     }
     filters.update({'years': [params['range']['start'], params['range']['end']]})
 
@@ -45,7 +45,8 @@ def query(params):
     if 'author' in params:
         filters['author'] = params['author']
 
-    return clusterInRadius(filterData(filters, getData()), params['viewport'])
+    # return clusterInRadius(filterData(filters, getData()), params['viewport'])
+    return clusterJava(filterData(filters, getData()), params['viewport'])
 
 
 @routes.route('/jsonData', methods=['POST'])

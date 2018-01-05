@@ -10,6 +10,7 @@ def loadData(fileName):
     _data = pd.read_csv(fileName, delimiter='\t')
     print('data loaded, calculating euclidean coordinates')
     setEuclideanCoordinates(_data)
+    _data['location'] = _data.groupby(['latitude', 'longitude']).grouper.group_info[0]
 
 def getData():
     if _data is None:

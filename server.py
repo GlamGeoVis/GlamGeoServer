@@ -5,6 +5,7 @@ from GlamGeoServer.data import loadData
 from GlamGeoServer.routes import routes
 
 loadData(os.environ.get('GLAM_DATA_FILE') or 'data/glammap-risse-dump-authors.csv')
+# loadData(os.environ.get('GLAM_DATA_FILE') or 'data/trove-dump-uniq-cleaned.tsv-authors.csv')
 
 app = application = Flask(__name__, static_url_path='/')
 app.register_blueprint(routes)

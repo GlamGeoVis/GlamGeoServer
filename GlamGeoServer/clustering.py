@@ -1,3 +1,5 @@
+from random import randint
+
 from sklearn.cluster import DBSCAN
 
 from GlamGeoServer.utils import viewportToWebMercator
@@ -46,4 +48,55 @@ def clusterInRadius(dataFrame, viewport):
 
     print('custering done')
     return dataFrame
+
+
+def clusterJava(dataFrame, viewport):
+    def get_nodes(node, max_depth, depth):
+        leafs = []
+        children = node.getChildren()
+        if children and depth < max_depth:
+            for child in children:
+                childleafs = get_nodes(child, max_depth, depth+1)
+                leafs = leafs + childleafs
+        else:
+            leafs.append(node)
+        return leafs
+
+
+    dataFrame['cluster'] = None
+    from py4j.java_gateway import JavaGateway, GatewayParameters
+    gateway = JavaGateway(gateway_parameters=GatewayParameters(auto_convert=True))
+
+    grouped = dataFrame.groupby('location')
+    locations = grouped.size().to_frame('size')
+    locations['x'] = grouped.first()['x']
+    locations['y'] = grouped.first()['y']
+
+    print('starting java clusterer')
+    cluster_result = gateway.entry_point.run(locations.reset_index().as_matrix())
+    print('java clusterer done')
+
+    clusters = get_nodes(cluster_result, 9, 0)
+
+    i = 0
+    for cluster in clusters:
+        locations = [node.getData().getGlyph().getID() for node in get_nodes(cluster, 10, 0)]
+        dataFrame.loc[dataFrame['location'].isin(locations), 'cluster'] = i
+        i += 1
+
+    gateway.close()
+
+    return dataFrame
+
+
+
+
+
+
+
+
+
+
+
+
 

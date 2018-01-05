@@ -16,7 +16,8 @@ def viewportToWebMercator(viewport):
     )
 
 def setEuclideanCoordinates(data):
-    xy = map(lambda x: projection(x[0], x[1]), zip(data['longitude'], data['latitude']))
+    meters_per_pixel = 156412  # 156412 meters / pixel
+    xy = map(lambda x: projection(x[0] / meters_per_pixel, x[1] / meters_per_pixel), zip(data['longitude'], data['latitude']))
     x, y = zip(*xy)
     data['x'] = x
     data['y'] = y
