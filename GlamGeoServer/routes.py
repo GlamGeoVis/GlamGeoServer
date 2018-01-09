@@ -1,4 +1,5 @@
 from flask import jsonify, request, Blueprint
+import json
 import numpy as np
 from flask_cors import cross_origin
 from GlamGeoServer.filters import filterData
@@ -8,16 +9,19 @@ from GlamGeoServer.data import getData
 
 routes = Blueprint('routes', 'routes')
 
+year_bins = np.arange(1700, 2010 + 50, 50)
+
+
 def buildGlyph(dataFrame):
     # This will need to change depending on the columns on the .csv file
-    bins = np.arange(1700, 2010 + 50, 50)
-    counts, years = np.histogram(dataFrame['year'], bins=bins)
-    yearCounts = { str(y): int(c) for y, c in zip(years, counts) }
+    counts, years = np.histogram(dataFrame['year'], bins=year_bins)
+    # yearCounts = { str(y): int(c) for y, c in zip(years, counts) }
     return {
-        'lat': dataFrame['latitude'].mean(),
-        'lng': dataFrame['longitude'].mean(),
+        'lat': round(dataFrame['latitude'].mean(), 8),
+        'lng': round(dataFrame['longitude'].mean(), 8),
         'count': len(dataFrame),
-        'years': yearCounts
+        'years': counts.tolist(),
+        'id': int(dataFrame['location'].iloc[0])
     }
 
 def aggregateClusters(dataFrame):
@@ -26,6 +30,22 @@ def aggregateClusters(dataFrame):
         result.append(buildGlyph(cluster[1]))  # cluster[1] contains actual dataFrame
 
     return result
+
+
+def aggregateLocations(dataFrame, noKeys=True):
+    print('aggregating locations')
+    result = []
+    for group in dataFrame.groupby('location'):
+        glyph = buildGlyph(group[1])
+        if noKeys:
+            glyph = [glyph[key] for key in glyph]
+        result.append(glyph)
+
+    print('aggregating done')
+
+
+    return result
+
 
 
 def aggregateYears(dataFrame):
@@ -46,22 +66,26 @@ def query(params):
         filters['author'] = params['author']
 
     # return clusterInRadius(filterData(filters, getData()), params['viewport'])
-    return clusterJava(filterData(filters, getData()), params['viewport'])
+    # return clusterJava(filterData(filters, getData()), params['viewport'])
+    return filterData(filters, getData())
 
 
 @routes.route('/jsonData', methods=['POST'])
 @cross_origin()
 def getClusters():
     dataFiltered = query(request.get_json())
-
+    print('after filtering: ' + str(dataFiltered.shape[0]) + ' data points')
     yearsData = aggregateYears(dataFiltered)
-    clusterData = aggregateClusters(dataFiltered)
 
-    return jsonify({
+    result = jsonify({
         'total': len(dataFiltered),
-        'clusters': clusterData,
+        'clusters': json.loads(clusterJava(dataFiltered, request.get_json()['viewport'])),
+        # 'data': json.loads(locations.reset_index().to_json()),
+        'data': aggregateLocations(dataFiltered),
         'years': yearsData
     })
+
+    return result
 
 @routes.route('/clusterDetails', methods=['POST'])
 @cross_origin()

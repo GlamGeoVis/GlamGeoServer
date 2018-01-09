@@ -72,22 +72,26 @@ def clusterJava(dataFrame, viewport):
     locations['x'] = grouped.first()['x']
     locations['y'] = grouped.first()['y']
 
+    locations_flat = locations.reset_index().as_matrix()
+
     print('starting java clusterer')
-    cluster_result = gateway.entry_point.run(locations.reset_index().as_matrix())
+    cluster_result = gateway.entry_point.run(locations_flat)
     print('java clusterer done')
 
-    clusters = get_nodes(cluster_result, 9, 0)
+    # clusters = get_nodes(cluster_result, 9, 0)
 
-    i = 0
-    for cluster in clusters:
-        locations = [node.getData().getGlyph().getID() for node in get_nodes(cluster, 10, 0)]
-        dataFrame.loc[dataFrame['location'].isin(locations), 'cluster'] = i
-        i += 1
+    # i = 0
+    # for cluster in clusters:
+    #     locations = [node.getData().getGlyph().getID() for node in get_nodes(cluster, 10, 0)]
+    #     dataFrame.loc[dataFrame['location'].isin(locations), 'cluster'] = i
+    #     i += 1
+
+    json_cluster = cluster_result.toJsonString(gateway.entry_point.getLeafMapFunction())
 
     gateway.close()
 
-    return dataFrame
-
+    # return dataFrame
+    return json_cluster
 
 
 
