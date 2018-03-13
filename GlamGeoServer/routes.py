@@ -5,7 +5,7 @@ from flask_cors import cross_origin
 from GlamGeoServer.filters import filterData
 from GlamGeoServer.clustering import clusterInRadius, clusterJava
 from GlamGeoServer.data import getData
-
+from datetime import datetime
 
 routes = Blueprint('routes', 'routes')
 
@@ -73,16 +73,25 @@ def query(params):
 @routes.route('/jsonData', methods=['POST'])
 @cross_origin()
 def getClusters():
+    timings = []
+    initial_timing = datetime.now()
     dataFiltered = query(request.get_json())
+    timings.append(datetime.now() - initial_timing) #0
     print('after filtering: ' + str(dataFiltered.shape[0]) + ' data points')
     yearsData = aggregateYears(dataFiltered)
+    timings.append(datetime.now() - initial_timing) #1
+    clusters = json.loads(clusterJava(dataFiltered, request.get_json()['viewport']))
+    timings.append(datetime.now() - initial_timing) #2
+    data = aggregateLocations(dataFiltered)
+    timings.append(datetime.now() - initial_timing) #3
 
     result = jsonify({
         'total': len(dataFiltered),
-        'clusters': json.loads(clusterJava(dataFiltered, request.get_json()['viewport'])),
+        'clusters': clusters,
         # 'data': json.loads(locations.reset_index().to_json()),
-        'data': aggregateLocations(dataFiltered),
-        'years': yearsData
+        'data': data,
+        'years': yearsData,
+        'timing': list(map(lambda x: x.total_seconds(), timings))
     })
 
     return result

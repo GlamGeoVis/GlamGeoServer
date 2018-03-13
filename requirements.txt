@@ -1,5 +1,6 @@
 click==6.7
 Flask==0.12.2
+Flask-Compress==1.4.0
 Flask-Cors==3.0.3
 geocluster==1.0.1
 haversine==0.4.5

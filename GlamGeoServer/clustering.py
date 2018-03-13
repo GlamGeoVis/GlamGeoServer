@@ -1,4 +1,5 @@
 from random import randint
+from datetime import datetime
 
 from sklearn.cluster import DBSCAN
 
@@ -75,8 +76,9 @@ def clusterJava(dataFrame, viewport):
     locations_flat = locations.reset_index().as_matrix()
 
     print('starting java clusterer')
-    cluster_result = gateway.entry_point.run(locations_flat)
+    cluster_result_json = gateway.entry_point.run(locations_flat)
     print('java clusterer done')
+    gateway.close()
 
     # clusters = get_nodes(cluster_result, 9, 0)
 
@@ -86,12 +88,10 @@ def clusterJava(dataFrame, viewport):
     #     dataFrame.loc[dataFrame['location'].isin(locations), 'cluster'] = i
     #     i += 1
 
-    json_cluster = cluster_result.toJsonString(gateway.entry_point.getLeafMapFunction())
 
-    gateway.close()
 
     # return dataFrame
-    return json_cluster
+    return cluster_result_json
 
 
 
