@@ -11,13 +11,12 @@ def parseRange(range_s):
 
 def viewportToWebMercator(viewport):
     return (
-        projection(min(180, viewport['northEast']['lng']), min(90, viewport['northEast']['lat'])),
-        projection(max(-180, viewport['southWest']['lng']), max(-90, viewport['southWest']['lat']))
+        projection(min(180, viewport['northEast']['lng']), min(85, viewport['northEast']['lat'])),
+        projection(max(-180, viewport['southWest']['lng']), max(-85, viewport['southWest']['lat']))
     )
 
 def setEuclideanCoordinates(data):
-    meters_per_pixel = 156412  # 156412 meters / pixel
-    xy = map(lambda x: projection(x[0] / meters_per_pixel, x[1] / meters_per_pixel), zip(data['longitude'], data['latitude']))
+    xy = map(lambda x: projection(x[0], x[1]), zip(data['longitude'], data['latitude']))
     x, y = zip(*xy)
     data['x'] = x
     data['y'] = y

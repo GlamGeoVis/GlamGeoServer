@@ -80,7 +80,7 @@ def getClusters():
     print('after filtering: ' + str(dataFiltered.shape[0]) + ' data points')
     yearsData = aggregateYears(dataFiltered)
     timings.append(datetime.now() - initial_timing) #1
-    clusters = json.loads(clusterJava(dataFiltered, request.get_json()['viewport']))
+    clusters = clusterJava(dataFiltered, request.get_json()['viewport'])
     timings.append(datetime.now() - initial_timing) #2
     data = aggregateLocations(dataFiltered)
     timings.append(datetime.now() - initial_timing) #3
