@@ -1,6 +1,9 @@
 # GLAM Server
 This is the Python backend for GLAM. You can find the frontend at [GlamGeoVis/GlamGeoMap](https://github.com/GlamGeoVis/GlamGeoMap).
 
+# Requirements
+Requires clusterer service to run (growing-glyphs#py4j).
+
 # Docker
 * This repository contains a Dockerfile that can be used to create a Docker image. The provided nginx configuration file in `config/nginx.conf.template` provides three endpoints, running on port 8000:
   * Trove backend endpoint `/trove`
