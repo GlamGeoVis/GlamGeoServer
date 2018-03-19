@@ -51,7 +51,7 @@ def clusterInRadius(dataFrame, viewport):
     return dataFrame
 
 
-def clusterJava(dataFrame, viewport):
+def clusterJava(dataFrame):
     def get_nodes(node, max_depth, depth):
         leafs = []
         children = node.getChildren()

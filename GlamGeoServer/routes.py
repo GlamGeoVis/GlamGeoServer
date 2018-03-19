@@ -17,8 +17,8 @@ def buildGlyph(dataFrame):
     counts, years = np.histogram(dataFrame['year'], bins=year_bins)
     # yearCounts = { str(y): int(c) for y, c in zip(years, counts) }
     return {
-        'lat': round(dataFrame['latitude'].mean(), 8),
-        'lng': round(dataFrame['longitude'].mean(), 8),
+        'x': round(dataFrame['x'].mean(), 8),
+        'y': round(dataFrame['y'].mean(), 8),
         'count': len(dataFrame),
         'years': counts.tolist(),
         'id': int(dataFrame['location'].iloc[0])
@@ -80,7 +80,7 @@ def getClusters():
     print('after filtering: ' + str(dataFiltered.shape[0]) + ' data points')
     yearsData = aggregateYears(dataFiltered)
     timings.append(datetime.now() - initial_timing) #1
-    clusters = clusterJava(dataFiltered, request.get_json()['viewport'])
+    clusters = clusterJava(dataFiltered)
     timings.append(datetime.now() - initial_timing) #2
     data = aggregateLocations(dataFiltered)
     timings.append(datetime.now() - initial_timing) #3
