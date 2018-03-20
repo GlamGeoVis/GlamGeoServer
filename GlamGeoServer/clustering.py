@@ -1,6 +1,8 @@
+import json
 from random import randint
 from datetime import datetime
 
+import requests
 from sklearn.cluster import DBSCAN
 
 from GlamGeoServer.utils import viewportToWebMercator
@@ -75,24 +77,13 @@ def clusterJava(dataFrame):
 
     locations_flat = locations.reset_index().as_matrix()
 
-    print('starting java clusterer')
-    cluster_result_json = gateway.entry_point.run(locations_flat)
-    print('java clusterer done')
-    gateway.close()
-
-    # clusters = get_nodes(cluster_result, 9, 0)
-
-    # i = 0
-    # for cluster in clusters:
-    #     locations = [node.getData().getGlyph().getID() for node in get_nodes(cluster, 10, 0)]
-    #     dataFrame.loc[dataFrame['location'].isin(locations), 'cluster'] = i
-    #     i += 1
-
-
-
-    # return dataFrame
-    return cluster_result_json
-
+    # print('starting java clusterer')
+    # cluster_result_json = gateway.entry_point.run(locations_flat)
+    # print('java clusterer done')
+    # gateway.close()
+    # return cluster_result_json
+    resp = requests.post('http://localhost:8001', None, json.dumps(locations_flat.tolist()))
+    return resp.text
 
 
 
