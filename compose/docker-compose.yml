@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  clusterer:
+    build:
+      context: ../../growing-glyphs
+    image: "glam/clusterer"
+
+  frontend:
+    build:
+      context: ../../GlamGeoMap
+    image: "glam/frontend"
+    volumes:
+      - static_frontend:/build
+    command: sh -c "rm -rf /build/* && cp -r /app/build/* /build && chmod -R a+rw /build"
+
+  backend:
+    build:
+      context: ..
+    image: "glam/backend"
+    depends_on:
+      - clusterer
+    env_file:
+      - ../.env
+
+  nginx:
+    image: nginx:1.13.12-alpine
+    volumes:
+      - static_frontend:/static_frontend:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - 8100:80
+
+volumes:
+  static_frontend:

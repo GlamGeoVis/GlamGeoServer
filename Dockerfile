@@ -1,20 +1,16 @@
-FROM python:3
+FROM python:3.6
 
-ENV STATIC_FILES_URL http://glam.esciencecenter.nl.s3-website.eu-central-1.amazonaws.com
+WORKDIR /app
 
-RUN (apt-get update)
+COPY requirements.txt /app/
+RUN pip3 install -r requirements.txt
 
-RUN (apt-get -y install nginx)
+RUN pip3 install gunicorn==19.7.1
 
-RUN (pip3 install uwsgi)
+COPY . /app
 
-WORKDIR /src
-COPY requirements.txt /src/
+STOPSIGNAL SIGINT
 
-RUN (pip3 install -r requirements.txt)
+CMD gunicorn --preload --workers 3 --max-requests 10 --timeout 15 --bind 0.0.0.0:8001 --access-logfile - --error-logfile - server:app
 
-COPY . /src
-
-CMD [ "sh", "run.sh" ]
-
-EXPOSE 8000
+EXPOSE 8001

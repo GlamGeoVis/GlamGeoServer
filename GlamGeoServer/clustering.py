@@ -2,6 +2,7 @@ import json
 from random import randint
 from datetime import datetime
 
+import os
 import requests
 from sklearn.cluster import DBSCAN
 
@@ -82,7 +83,7 @@ def clusterJava(dataFrame):
     # print('java clusterer done')
     # gateway.close()
     # return cluster_result_json
-    resp = requests.post('http://localhost:8001', None, json.dumps(locations_flat.tolist()))
+    resp = requests.post(os.environ.get('CLUSTERER_URL'), None, json.dumps(locations_flat.tolist()))
     return resp.text
 
 
