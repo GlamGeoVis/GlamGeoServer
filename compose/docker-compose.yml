@@ -5,6 +5,7 @@ services:
     build:
       context: ../../growing-glyphs
     image: "glam/clusterer"
+    stdin_open: true
 
   frontend:
     build:
